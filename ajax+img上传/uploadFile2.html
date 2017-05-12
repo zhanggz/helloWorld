@@ -1,0 +1,89 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Upload Files using XMLHttpRequest - Minimal</title>
+
+    <script type="text/javascript">
+      function fileSelected() {
+        var file = document.getElementById('fileToUpload').files[0];
+        if (file) {
+          var fileSize = 0;
+          if (file.size > 1024 * 1024)
+            fileSize = (Math.round(file.size * 100 / (1024 * 1024)) / 100).toString() + 'MB';
+          else
+            fileSize = (Math.round(file.size * 100 / 1024) / 100).toString() + 'KB';
+
+          document.getElementById('fileName').innerHTML = 'Name: ' + file.name;
+          document.getElementById('fileSize').innerHTML = 'Size: ' + fileSize;
+          document.getElementById('fileType').innerHTML = 'Type: ' + file.type;
+        }
+      }
+
+      function uploadFile() {
+        var fd = new FormData();
+        fd.append("TestFile", document.getElementById('fileToUpload').files[0]);
+        fd.append("Request",JSON.stringify(
+            {
+                HouseID:"00000000-0000-0000-0000-000000000001",
+                RoomTypeID:null,
+                Files:[{
+                    Name:"TestFile",
+                    Tag:"TestTag",
+                    PhotoData:{
+                        Title:"TestImage",
+                        Description:"TestImage",
+                        Index:1,
+                    }
+                }],
+                }
+            ));
+        var xhr = new XMLHttpRequest();
+        xhr.upload.addEventListener("progress", uploadProgress, false);
+        xhr.addEventListener("load", uploadComplete, false);
+        xhr.addEventListener("error", uploadFailed, false);
+        xhr.addEventListener("abort", uploadCanceled, false);
+        xhr.open("POST", "http://192.168.1.132:5001/api/CreatePhoto?access_token=eyJhbGciOiJSUzI1NiIsImtpZCI6IkE0OTRGMUM3QkJEOTlENTUwQ0Y0QzVDNDk3NzgxRTlCQjNDRDZENTEiLCJ0eXAiOiJKV1QiLCJ4NXQiOiJwSlR4eDd2Wm5WVU05TVhFbDNnZW03UE5iVkUifQ.eyJuYmYiOjE0OTIwNjMwNjgsImV4cCI6MTQ5MjA5MTg2OCwiaXNzIjoiaHR0cDovLzE5Mi4xNjguMS4xMzI6NTAwMCIsImF1ZCI6WyJodHRwOi8vMTkyLjE2OC4xLjEzMjo1MDAwL3Jlc291cmNlcyIsImNvbW1vbl9hcGkiLCJpZGVudGl0eV9hcGkiXSwiY2xpZW50X2lkIjoiVEJCLlNlY3VyaXR5LklkZW50aXR5U2VydmVyLkFkbWluLldlYkNsaWVudCIsInN1YiI6IjAwMDAwMDAwLTAwMDAtMDAwMC0wMDAwLTAwMDAwMDAwMDAwMyIsImF1dGhfdGltZSI6MTQ5MjA2MzA2OCwiaWRwIjoibG9jYWwiLCJyb2xlIjpbInVzZXIiLCJicm9rZXIiLCJlbXBsb3llZSIsInl5emoiLCJ0empsIiwienlndyJdLCJzY29wZSI6WyJlbWFpbCIsIm9wZW5pZCIsInBob25lIiwicHJvZmlsZSIsInJvbGVzIiwiY29tbW9uX2FwaSIsImlkZW50aXR5X2FwaSIsIm9mZmxpbmVfYWNjZXNzIl0sImFtciI6WyJwd2QiXX0.CQJLSDzZn8_hHkbBGBcyQ87pz4XIIVGbVwRyFIcv39pGi3kdrkiqZ21yqnBSGg7SHU_XMjFAOTd80vr6eb3c6ddUOphL0Xd24c_bJcyDXp0dtXjW-S5_h5WrF6SknaRPqqNz2LJ3FZPBZXR8GwI16bXI6Z2z95DEergDtwvLKVBfgFQjUEoKxuK34HkThQQFFzZ3APvmnOTUodotG7weVYPJIJXWa1zW7euWGImu4NAM6SxkAUqeG4Kcm3yszROUNkRvwIlsu276QKNoZzgKqHph1hfv-X9AmQNr-PJIXC7idBWZGflYWU584Uo6ZTJqNgceWE61ENeY9mpjseCqSw");
+        xhr.send(fd);
+      }
+
+      function uploadProgress(evt) {
+        if (evt.lengthComputable) {
+          var percentComplete = Math.round(evt.loaded * 100 / evt.total);
+          document.getElementById('progressNumber').innerHTML = percentComplete.toString() + '%';
+        }
+        else {
+          document.getElementById('progressNumber').innerHTML = 'unable to compute';
+        }
+      }
+
+      function uploadComplete(evt) {
+        /* This event is raised when the server send back a response */
+        alert(evt.target.responseText);
+      }
+
+      function uploadFailed(evt) {
+        alert("There was an error attempting to upload the file.");
+      }
+
+      function uploadCanceled(evt) {
+        alert("The upload has been canceled by the user or the browser dropped the connection.");
+      }
+    </script>
+</head>
+<body>
+<form id="form1" enctype="multipart/form-data" method="post" action="http://192.168.1.132:5001/api/CreatePhoto">
+<div class="row">
+      <label for="fileToUpload">Select a File to Upload</label>
+<input type="file" name="fileToUpload" id="fileToUpload" onchange="fileSelected();"/>
+    </div>
+<div id="fileName"></div>
+<div id="fileSize"></div>
+<div id="fileType"></div>
+<div class="row">
+<input type="button" onclick="uploadFile()" value="Upload" />
+    </div>
+<div id="progressNumber"></div>
+</form>
+
+</body>
+</html>
